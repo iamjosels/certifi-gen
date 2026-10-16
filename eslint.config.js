@@ -165,7 +165,7 @@ export default defineConfig(
     rules: reactHooks.configs.recommended.rules,
   },
   {
-    files: ['scripts/**/*.ts', 'tests/**/*.ts', '*.config.ts'],
+    files: ['scripts/**/*.ts', 'tests/**/*.ts', 'deploy/**/*.ts', '*.config.ts'],
     languageOptions: { globals: globals.node },
   },
   prettier,

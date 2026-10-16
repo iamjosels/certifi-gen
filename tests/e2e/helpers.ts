@@ -66,7 +66,7 @@ export async function generate(page: Page, total: number): Promise<number> {
   const started = Date.now();
   await page
     .getByRole('button', {
-      name: new RegExp(`Generar ${String(total)} certificados|Volver a generar`),
+      name: new RegExp(`Generar ${total.toLocaleString('es-PE')} certificados|Volver a generar`),
     })
     .click();
   await expect(page.getByText(/¡Listo! .* certificados generados/)).toBeVisible({

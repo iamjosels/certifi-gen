@@ -62,6 +62,7 @@ const OUTPUT_FILES = [
   'participantes-360.docx',
   'lista-vacia.txt',
   'lista-no-soportada.json',
+  'participantes-1000.txt',
   'expected.json',
 ] as const;
 
@@ -144,6 +145,8 @@ async function main(): Promise<void> {
   await write('participantes-360.docx', await buildDocx(entries));
   await write('lista-vacia.txt', buildEmptyTxt());
   await write('lista-no-soportada.json', JSON.stringify({ participantes: ['Ana'] }));
+  // Volume test: the same kind of names, 1000 of them.
+  await write('participantes-1000.txt', buildTxt(buildNameList(1000, 1000)));
 
   const names = entries.map((entry) => entry.clean);
   const groups = new Map<string, number[]>();

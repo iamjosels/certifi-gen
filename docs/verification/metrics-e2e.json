@@ -1,13 +1,19 @@
 {
   "pdf+txt-360-both": {
-    "browserMs": 8082,
-    "zipBytes": 6821604,
-    "mergedBytes": 139272,
+    "browserMs": 5524,
+    "zipBytes": 6821589,
+    "mergedBytes": 139275,
     "longTasks": 0,
     "longestTaskMs": 0
   },
   "png+xlsx-360-merged": {
-    "browserMs": 2353,
+    "browserMs": 2276,
     "mergedBytes": 233383
+  },
+  "pdf+txt-1000-both": {
+    "browserMs": 14067,
+    "mergedBytes": 344338,
+    "longTasks": 0,
+    "longestTaskMs": 0
   }
 }

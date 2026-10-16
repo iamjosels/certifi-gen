@@ -252,7 +252,7 @@ function dirty(clean: string, random: () => number, index: number): string {
   }
 }
 
-export function buildNameList(seed = 2026): NameEntry[] {
+export function buildNameList(seed = 2026, total = TOTAL_VALID): NameEntry[] {
   const random = createRandom(seed);
   const pick = <T>(items: readonly T[]): T => {
     const item = items[Math.floor(random() * items.length)];
@@ -275,7 +275,7 @@ export function buildNameList(seed = 2026): NameEntry[] {
     add(b, true);
   }
 
-  while (cleans.length < TOTAL_VALID) {
+  while (cleans.length < total) {
     const parts = [pick(FIRST_NAMES)];
     if (random() < 0.35) parts.push(pick(FIRST_NAMES));
     parts.push(pick(LAST_NAMES));

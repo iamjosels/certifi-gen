@@ -4,15 +4,15 @@ Registro de avance por fase. Si la sesión se interrumpe, se retoma desde la pri
 
 Los hashes de commit de cada fase se ven con `git log --oneline` (cada mensaje termina en `(phase N)`).
 
-| Fase              | Estado    |
-| ----------------- | --------- |
-| 0 — Setup         | cerrada   |
-| 1 — Dominio       | cerrada   |
-| 2 — Participantes | cerrada   |
-| 3 — Motor         | cerrada   |
-| 4 — Interfaz      | cerrada   |
-| 5 — E2E y pulido  | cerrada   |
-| 6 — Entrega       | pendiente |
+| Fase              | Estado  |
+| ----------------- | ------- |
+| 0 — Setup         | cerrada |
+| 1 — Dominio       | cerrada |
+| 2 — Participantes | cerrada |
+| 3 — Motor         | cerrada |
+| 4 — Interfaz      | cerrada |
+| 5 — E2E y pulido  | cerrada |
+| 6 — Entrega       | cerrada |
 
 ## Decisiones globales
 
@@ -346,3 +346,58 @@ Los hashes de commit de cada fase se ven con `git log --oneline` (cada mensaje t
 **Pendientes**
 
 - Ninguno de la fase.
+
+---
+
+## Fase 6 — Entrega ✅
+
+**Qué se hizo**
+
+- `README.md` en español, con:
+  - qué hace y el uso paso a paso;
+  - cómo reutilizar el diseño en otro evento;
+  - recomendaciones de plantilla (exportar desde Canva como PDF estándar y dejar vacío el espacio del nombre; peso de la plantilla en el ZIP frente al PDF único);
+  - formatos aceptados;
+  - fuentes (incluidas, subir una propia, agregar una al proyecto);
+  - scripts de desarrollo, arquitectura, despliegue en Vercel (panel y CLI) y compatibilidad.
+- Capturas en `docs/screenshots/` (claro, oscuro y tablet), con `npm run screenshots`.
+- `vercel.json`:
+  - Framework Vite, `npm ci`, `npm run build` y salida en `dist`.
+  - Cabeceras de seguridad: CSP estricta (`default-src 'self'`; `wasm-unsafe-eval` para los decodificadores de pdf.js), `nosniff`, `no-referrer`, `Permissions-Policy` y COOP.
+  - Caché inmutable para `/assets` y de 7 días para `/fonts` y `/pdfjs`.
+- `deploy/headers.ts`: las mismas cabeceras se aplican en `vite preview`, así los **27 E2E corren bajo la CSP de producción**. `tests/integration/deploy.test.ts` comprueba que `vercel.json` declare exactamente lo mismo, y el test de humo verifica la cabecera en la respuesta.
+- **Prueba de volumen de 1000 participantes**:
+  - nuevo fixture `participantes-1000.txt`;
+  - `tests/integration/volume.test.ts` (Node): 1000 PDFs en el ZIP y 1000 páginas, en 15,6 s;
+  - `tests/e2e/volume.spec.ts` (navegador): 14–20 s y 0 tareas largas.
+- **Modo desarrollo**: `optimizeDeps.include` evita que Vite reoptimice pdf.js, pdf-lib y los parsers a mitad de la sesión (antes el primer uso daba "504 Outdated Optimize Dep"). Probado con el flujo completo en `npm run dev`: sin mensajes en consola.
+- **Build de producción probado**: `npm run build` y `npm run preview` (el `webServer` de Playwright) recorriendo el flujo completo en los E2E, más un recorrido manual en modo desarrollo.
+
+**Decisiones**
+
+- No se despliega: no hay remoto ni cuenta configurados, y publicar es una acción hacia afuera. El proyecto queda listo para importarlo en Vercel.
+- La CSP no permite `unsafe-inline` ni `unsafe-eval`. React aplica los estilos dinámicos por CSSOM, que la CSP no bloquea; se verificó con los E2E.
+- La estimación del PDF único es conservadora: en el ejemplo de 360, ≈ 184 KB estimados frente a 136 KB reales. La del ZIP es precisa: ≈ 6,4 MB frente a 6,6 MB.
+
+**Pruebas que pasan**
+
+- `npm run check` ✅: lint, typecheck, **341 tests** en 34 archivos y build.
+- `npm run test:e2e` ✅: **27 tests** en unos 2,2 min, con consola limpia y la CSP de producción.
+
+---
+
+## Definición de terminado — evidencia
+
+| Criterio                                                                                                | Estado | Evidencia                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run check` y `npm run test:e2e` pasan sin errores                                                  | ✅     | 341 tests unitarios, de integración y de componentes + lint + typecheck + build; 27 E2E. Ninguna regla desactivada, ningún `skip`, ningún umbral bajado. Cobertura de `src/domain`: 99,37 % sentencias, 95,63 % ramas, 100 % funciones, 100 % líneas.                                                                       |
+| Los 360 certificados se generan en menos de 60 s sin congelar la interfaz                               | ✅     | Navegador (E2E `full-flow`): **5,5–8,1 s** en modo "ambos" según la ejecución, **0 tareas largas** en el hilo principal (el test exige < 200 ms). Node: 5,7 s. Con 1000: 14–20 s en el navegador.                                                                                                                           |
+| El PDF único pesa como máximo la plantilla + 10 MB                                                      | ✅     | `generation.test.ts`, en 11 variantes de plantilla. Ejemplos: plantilla PDF de 11,6 KB → 139 KB; PNG de 128,5 KB → 233 KB; JPG de 161,6 KB → 288 KB; PNG pesado de 7,09 MB → 6,83 MB (menos que la plantilla).                                                                                                              |
+| Cada PDF individual pesa como máximo la plantilla + 150 KB                                              | ✅     | `generation.test.ts`, en las 11 variantes (máximo medido por variante). Ejemplos: PDF 11,6 KB → 19 KB; PNG 128,5 KB → 114 KB; JPG 161,6 KB → 169 KB; PNG pesado 7,09 MB → 6,72 MB.                                                                                                                                          |
+| Tildes, ñ, ü, apóstrofes y guiones se ven bien (imágenes de `docs/verification/`)                       | ✅     | `1-mas-largo`, `2-con-enie`, `3-con-apostrofe`, `4-normal`, `5-vertical-mas-largo` y `6-caligrafica-guion` (página completa y recorte ampliado), revisadas una por una. Además, texto extraído idéntico en los tests y equivalencia píxel a píxel entre fuente recortada y completa en las 5 fuentes.                       |
+| Ningún nombre del fixture se sale de su caja; los que no entran ni al mínimo se avisan antes de generar | ✅     | `generation.test.ts`: los 5 nombres de más de 45 caracteres quedan dentro de la caja y `reporte.csv` no marca desbordes en las 11 variantes. E2E `design`: "Todos los textos entran…" (360 revisados), y con una caja angosta se ven el aviso rojo, el campo marcado, el aviso del paso 4 y `sí (Nombre)` en `reporte.csv`. |
+| Funciona con plantillas PDF, PNG y JPG, horizontales y verticales                                       | ✅     | E2E: PDF horizontal (`full-flow`), PNG horizontal (`formats` con XLSX, `cancel`), JPG horizontal (`formats` con DOCX), PDF/PNG/JPG verticales (`formats`). Integración: además rotada, recortada, EXIF, pesada y transparente.                                                                                              |
+| Funciona con listas TXT, CSV (UTF-8 y Windows-1252), XLSX y DOCX                                        | ✅     | Integración: los 5 fixtures dan exactamente los 360 nombres de `expected.json`. E2E: TXT (`full-flow`), CSV UTF-8, CSV Windows-1252 (los 360 nombres de `reporte.csv` coinciden con tildes), XLSX eligiendo "Nombre" y DOCX.                                                                                                |
+| Exportar e importar configuración funciona                                                              | ✅     | E2E `config`: importar JSON y generar sin tocar el diseño (posición, MAYÚSCULAS y `CERT-2026-002` verificados en el PDF); exportar → importar en otra sesión; restaurar desde localStorage. Tests de componentes y de dominio de la validación.                                                                             |
+| Build de producción probado con el flujo completo                                                       | ✅     | Los 27 E2E corren contra `npm run build && npm run preview`, con las cabeceras de producción. Lighthouse sobre el build: escritorio 100/100/100/100 y móvil 98/100/100/100.                                                                                                                                                 |
+| `README.md` completo y `PROGRESS.md` con el registro de todas las fases y sus métricas                  | ✅     | Este archivo (Fases 0–6) y `README.md`. Métricas en `docs/verification/metrics-node.json` y `docs/verification/metrics-e2e.json`.                                                                                                                                                                                           |
