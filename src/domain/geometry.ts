@@ -122,3 +122,53 @@ export function uprightTransform(
       return { x: size.height, y: 0, rotate: 90 };
   }
 }
+
+/** PDF transformation matrix [a, b, c, d, e, f]. */
+export type Matrix = readonly [number, number, number, number, number, number];
+
+/**
+ * Displayed size of an image with EXIF `orientation` (1..8): 5–8 swap width and height.
+ */
+export function orientedSize(pixels: Size, orientation: number): Size {
+  return orientation >= 5 && orientation <= 8
+    ? { width: pixels.height, height: pixels.width }
+    : { width: pixels.width, height: pixels.height };
+}
+
+/**
+ * Matrix that draws a stored image (PDF unit square, first row at the top) on a page of size
+ * `page` so it appears upright according to its EXIF orientation, without re-encoding it.
+ */
+export function exifImageMatrix(orientation: number, page: Size): Matrix {
+  // Stored normalized (column c, row r from the top) → displayed normalized (X, Y from the top).
+  const display = (c: number, r: number): [number, number] => {
+    switch (orientation) {
+      case 2:
+        return [1 - c, r];
+      case 3:
+        return [1 - c, 1 - r];
+      case 4:
+        return [c, 1 - r];
+      case 5:
+        return [r, c];
+      case 6:
+        return [1 - r, c];
+      case 7:
+        return [1 - r, 1 - c];
+      case 8:
+        return [r, 1 - c];
+      default:
+        return [c, r];
+    }
+  };
+  // PDF image space: u = c, v = 1 - r. Page space: x = X·W, y = (1 - Y)·H.
+  const toPage = (u: number, v: number): [number, number] => {
+    const [X, Y] = display(u, 1 - v);
+    return [X * page.width, (1 - Y) * page.height];
+  };
+  const [e, f] = toPage(0, 0);
+  const [ux, uy] = toPage(1, 0);
+  const [vx, vy] = toPage(0, 1);
+  // "+ 0" turns -0 into 0 so the matrix serializes cleanly.
+  return [ux - e + 0, uy - f + 0, vx - e + 0, vy - f + 0, e + 0, f + 0];
+}

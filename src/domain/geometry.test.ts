@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   canvasToRelative,
+  exifImageMatrix,
+  orientedSize,
   normalizeRotation,
   pdfToRelative,
   placeText,
@@ -176,5 +178,58 @@ describe('rotation', () => {
     expect(apply(uprightTransform(size, 270), { x: 0, y: 842 })).toEqual({ x: 0, y: 0 });
     // /Rotate 180: top-left ends bottom-right.
     expect(apply(uprightTransform(size, 180), { x: 0, y: 842 })).toEqual({ x: 595, y: 0 });
+  });
+});
+
+describe('EXIF orientation', () => {
+  const stored = { width: 400, height: 300 };
+
+  it('swaps the displayed size for orientations 5 to 8', () => {
+    expect(orientedSize(stored, 1)).toEqual(stored);
+    expect(orientedSize(stored, 3)).toEqual(stored);
+    expect(orientedSize(stored, 6)).toEqual({ width: 300, height: 400 });
+    expect(orientedSize(stored, 8)).toEqual({ width: 300, height: 400 });
+  });
+
+  /** Where a stored pixel (column, row from the top), normalized, ends up on the page. */
+  function project(orientation: number, c: number, r: number) {
+    const page = orientedSize(stored, orientation);
+    const [a, b, cc, d, e, f] = exifImageMatrix(orientation, page);
+    const u = c;
+    const v = 1 - r;
+    return { x: a * u + cc * v + e, y: b * u + d * v + f, page };
+  }
+
+  it('is the identity scale for orientation 1', () => {
+    expect(exifImageMatrix(1, stored)).toEqual([400, 0, 0, 300, 0, 0]);
+    expect(exifImageMatrix(0, stored)).toEqual([400, 0, 0, 300, 0, 0]);
+  });
+
+  it.each([
+    // [orientation, expected page corner of the stored top-left pixel]
+    [1, 'top-left'],
+    [2, 'top-right'],
+    [3, 'bottom-right'],
+    [4, 'bottom-left'],
+    [5, 'top-left'],
+    [6, 'top-right'],
+    [7, 'bottom-right'],
+    [8, 'bottom-left'],
+  ] as const)('orientation %i puts the stored top-left corner at the %s', (orientation, corner) => {
+    const { x, y, page } = project(orientation, 0, 0);
+    const expected = {
+      'top-left': { x: 0, y: page.height },
+      'top-right': { x: page.width, y: page.height },
+      'bottom-right': { x: page.width, y: 0 },
+      'bottom-left': { x: 0, y: 0 },
+    }[corner];
+    expect({ x, y }).toEqual(expected);
+  });
+
+  it('orientation 6 sends the stored top row to the right edge (rotate 90° clockwise)', () => {
+    const topRight = project(6, 1, 0);
+    expect(topRight).toMatchObject({ x: 300, y: 0 });
+    const bottomLeft = project(6, 0, 1);
+    expect(bottomLeft).toMatchObject({ x: 0, y: 400 });
   });
 });

@@ -1,0 +1,61 @@
+{
+  "node": "v24.19.0",
+  "platform": "win32",
+  "results": [
+    {
+      "template": "plantilla-horizontal.pdf",
+      "templateBytes": 11591,
+      "participants": 360,
+      "mode": "both",
+      "runs": 3,
+      "medianMs": 5752,
+      "zipBytes": 6869628,
+      "mergedBytes": 139272,
+      "averageIndividualBytes": 19082
+    },
+    {
+      "template": "plantilla-vertical.pdf",
+      "templateBytes": 11590,
+      "participants": 360,
+      "mode": "both",
+      "runs": 3,
+      "medianMs": 5661,
+      "zipBytes": 6868572,
+      "mergedBytes": 139586,
+      "averageIndividualBytes": 19079
+    },
+    {
+      "template": "plantilla-horizontal.png",
+      "templateBytes": 128541,
+      "participants": 360,
+      "mode": "both",
+      "runs": 3,
+      "medianMs": 5407,
+      "zipBytes": 40681576,
+      "mergedBytes": 233383,
+      "averageIndividualBytes": 113004
+    },
+    {
+      "template": "plantilla-horizontal.jpg",
+      "templateBytes": 161623,
+      "participants": 360,
+      "mode": "both",
+      "runs": 3,
+      "medianMs": 5343,
+      "zipBytes": 60474884,
+      "mergedBytes": 288370,
+      "averageIndividualBytes": 167986
+    },
+    {
+      "template": "plantilla-pesada.png",
+      "templateBytes": 7092165,
+      "participants": 360,
+      "mode": "both",
+      "runs": 1,
+      "medianMs": 15429,
+      "zipBytes": 2417105342,
+      "mergedBytes": 6834564,
+      "averageIndividualBytes": 6714182
+    }
+  ]
+}
