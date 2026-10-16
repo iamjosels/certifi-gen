@@ -2,6 +2,8 @@
 
 Genera cientos de certificados en PDF a partir de una plantilla y una lista de participantes, **directamente en el navegador**. Ningún archivo se sube a un servidor: la plantilla, la lista y los PDF generados nunca salen de tu equipo.
 
+**En línea:** https://certifi-gen-delta.vercel.app
+
 ![Paso 3: ubicar el nombre sobre la plantilla](docs/screenshots/light-3-diseno.png)
 
 - **Formatos de entrada:** plantilla en PDF, PNG o JPG; lista en TXT, CSV (UTF-8 o Windows-1252), Excel (.xlsx) o Word (.docx).

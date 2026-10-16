@@ -1,0 +1,10 @@
+# Generated locally; Vercel installs and builds from source.
+/node_modules
+/dist
+/coverage
+/fixtures
+/test-results
+/playwright-report
+/blob-report
+/public/pdfjs
+/docs/verification/lighthouse

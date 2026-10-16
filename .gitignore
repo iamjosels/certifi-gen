@@ -15,3 +15,5 @@ Thumbs.db
 .env*
 !.env.example
 /public/pdfjs/
+
+.vercel

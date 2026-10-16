@@ -401,3 +401,12 @@ Los hashes de commit de cada fase se ven con `git log --oneline` (cada mensaje t
 | Exportar e importar configuración funciona                                                              | ✅     | E2E `config`: importar JSON y generar sin tocar el diseño (posición, MAYÚSCULAS y `CERT-2026-002` verificados en el PDF); exportar → importar en otra sesión; restaurar desde localStorage. Tests de componentes y de dominio de la validación.                                                                             |
 | Build de producción probado con el flujo completo                                                       | ✅     | Los 27 E2E corren contra `npm run build && npm run preview`, con las cabeceras de producción. Lighthouse sobre el build: escritorio 100/100/100/100 y móvil 98/100/100/100.                                                                                                                                                 |
 | `README.md` completo y `PROGRESS.md` con el registro de todas las fases y sus métricas                  | ✅     | Este archivo (Fases 0–6) y `README.md`. Métricas en `docs/verification/metrics-node.json` y `docs/verification/metrics-e2e.json`.                                                                                                                                                                                           |
+
+---
+
+## Despliegue
+
+- **Producción:** https://certifi-gen-delta.vercel.app (proyecto `certifi-gen` en el equipo "Giovanni's projects" de Vercel), desplegado con la CLI (`vercel deploy --prod`). Vercel instala y compila desde el código fuente (`npm ci` + `npm run build`).
+- `.vercelignore` excluye lo que se genera localmente (fixtures, `dist`, reportes de tests, assets de pdf.js), con patrones anclados a la raíz.
+- **Verificado contra la URL de producción** con Playwright: plantilla PDF + CSV Windows-1252, vista previa real, 360 certificados en modo ZIP + PDF único en 4,8 s; ZIP con 360 PDF + `reporte.csv`, PDF único de 360 páginas, consola limpia. Las cabeceras (CSP, `nosniff`, `no-referrer`, `Permissions-Policy`, COOP) y la caché inmutable de `/assets` se comprobaron en la respuesta.
+- **Nuevas versiones:** `vercel deploy --prod` desde la carpeta del proyecto (ya enlazada en `.vercel/`). Para tener despliegues automáticos en cada push, conecta un repositorio de Git al proyecto en el panel de Vercel.
