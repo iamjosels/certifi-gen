@@ -1,0 +1,10 @@
+# Certifica
+
+> Generador masivo de certificados en PDF que corre 100% en el navegador. Ningún archivo se sube a un servidor.
+
+Pasos: 1) subir la plantilla (PDF, PNG o JPG), 2) subir la lista de participantes (TXT, CSV, XLSX o DOCX), 3) ubicar los campos sobre la plantilla, 4) generar un ZIP con un PDF por participante, un solo PDF con todos, o ambos.
+
+## Páginas
+
+- [Aplicación](/): asistente de 4 pasos (plantilla, participantes, diseño y generación).
+- [Licencias de las fuentes](/fonts/dm-serif-display/OFL.txt): todas las fuentes incluidas usan la licencia SIL Open Font License.

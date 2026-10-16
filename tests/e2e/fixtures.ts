@@ -26,3 +26,4 @@ export const test = base.extend<{ consoleGuard: string[] }>({
 });
 
 export { expect };
+export type { Page } from '@playwright/test';

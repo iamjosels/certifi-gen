@@ -11,7 +11,7 @@ Los hashes de commit de cada fase se ven con `git log --oneline` (cada mensaje t
 | 2 — Participantes | cerrada   |
 | 3 — Motor         | cerrada   |
 | 4 — Interfaz      | cerrada   |
-| 5 — E2E y pulido  | pendiente |
+| 5 — E2E y pulido  | cerrada   |
 | 6 — Entrega       | pendiente |
 
 ## Decisiones globales
@@ -298,3 +298,51 @@ Los hashes de commit de cada fase se ven con `git log --oneline` (cada mensaje t
 **Pendientes**
 
 - Ninguno de la fase. Los E2E formales, axe y Lighthouse corresponden a la Fase 5.
+
+---
+
+## Fase 5 — E2E y pulido ✅
+
+**Qué se hizo**
+
+26 pruebas de Playwright (Chromium) contra el **build de producción** (`npm run build && npm run preview`), con los fixtures. El fixture automático `consoleGuard` hace fallar cualquier prueba ante un error o warning de consola, un `Warning:` de pdf.js o un error de página. Las descargas se validan desde Node con JSZip, pdf-lib y pdf.js.
+
+| Archivo             | Qué cubre                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `full-flow.spec.ts` | **Plantilla PDF + TXT de 360**: arrastrar la caja con el mouse y soltarla junto al centro, donde se ajusta sola (snap a 50 %); ZIP + PDF único; **360 PDF + `reporte.csv`, 360 páginas**; texto exacto del primero, el último, el más largo y uno con ñ en ambos archivos; tiempo < 60 s; tareas largas del hilo principal < 200 ms.                                                                               |
+| `formats.spec.ts`   | **PNG + XLSX eligiendo la columna "Nombre"** (cambia a "Correo" y vuelve); **plantillas verticales en PDF, PNG y JPG** (360 páginas, página vertical, nombre más largo correcto); **CSV Windows-1252**: los 360 nombres de `reporte.csv` son idénticos a la lista, con sus tildes, y el texto del PDF con ñ es correcto; JPG + DOCX con la "Vista previa real" (pdf.js en el navegador); CSV UTF-8 en ambos modos. |
+| `config.spec.ts`    | **Importar una configuración JSON y generar sin tocar el diseño**: se ven la posición, la fuente, MAYÚSCULAS y el código `CERT-2026-002` en la página 2. Exportar → importar en una sesión nueva. Restaurar desde localStorage tras recargar.                                                                                                                                                                      |
+| `cancel.spec.ts`    | **Cancelar a mitad** (progreso > 0/360), sin descargas, y **volver a generar** hasta las 360 páginas.                                                                                                                                                                                                                                                                                                              |
+| `errors.spec.ts`    | **Errores esperados**: formato no soportado (GIF), **PDF dañado**, PDF protegido, **lista vacía**, lista JSON. "Continuar" queda bloqueado; un archivo válido corrige el error.                                                                                                                                                                                                                                    |
+| `design.spec.ts`    | Desbordes marcados en rojo antes de generar, "Ver los más largos", aviso en el paso 4 y `sí (Nombre)` en `reporte.csv`. El diseño por defecto hace entrar a los 360 nombres. PNG pesado → JPG; PNG transparente → aviso y "Optimizar igual". Agregar un código correlativo.                                                                                                                                        |
+| `a11y.spec.ts`      | **axe-core (WCAG 2.0/2.1 A y AA) en los 4 pasos** (plantilla vacía y cargada, participantes, diseño, generar, terminado), **en tema claro y oscuro**: 0 violaciones. Flujo completo solo con teclado (mover y redimensionar la caja).                                                                                                                                                                              |
+| `smoke.spec.ts`     | Carga en español sin errores de consola.                                                                                                                                                                                                                                                                                                                                                                           |
+
+**Lighthouse** (`docs/verification/lighthouse/`, Lighthouse 13.5 contra `vite preview`)
+
+| Perfil     | Rendimiento | Accesibilidad | Buenas prácticas | SEO |
+| ---------- | ----------- | ------------- | ---------------- | --- |
+| Escritorio | 100         | 100           | 100              | 100 |
+| Móvil      | 98          | 100           | 100              | 100 |
+
+- Escritorio: FCP 0,4 s · LCP 0,4 s · TBT 0 ms · CLS 0. Móvil (simulado): FCP 1,8 s · LCP 2,0 s · TBT 0 ms · CLS 0.
+- Correcciones evidentes: `robots.txt` (el SEO pasó de 91 a 100) y `llms.txt`.
+
+**Métricas en el navegador** (`docs/verification/metrics-e2e.json`)
+
+- 360 certificados, modo "ambos", plantilla PDF: **8,1 s** desde el clic hasta el resumen; ZIP de 6,8 MB y PDF único de 139 KB; **0 tareas largas** (> 50 ms) en el hilo principal durante la generación.
+- 360 en PDF único con plantilla PNG: 2,4 s.
+
+**Decisiones**
+
+- Playwright corre con 1 worker, para que los tiempos y la detección de tareas largas no dependan de pruebas en paralelo.
+- No se agregó `ai-catalog.json` (la auditoría experimental "agentic browsing" de Lighthouse): es una especificación ajena al proyecto, y el servidor de preview devuelve `index.html` para rutas inexistentes.
+- "Reduce unused JavaScript" (58 KiB del bundle principal) queda como mejora opcional (pasos con carga diferida): el rendimiento ya es 100/98.
+
+**Pruebas que pasan**
+
+- `npm run check` ✅ (339 tests) y `npm run test:e2e` ✅ (26 tests, unos 2 min).
+
+**Pendientes**
+
+- Ninguno de la fase.
