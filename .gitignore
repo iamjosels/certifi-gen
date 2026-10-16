@@ -1,0 +1,17 @@
+node_modules/
+/dist/
+/coverage/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+/fixtures/
+.vite/
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+.vercel
+.env*
+!.env.example
+/public/pdfjs/

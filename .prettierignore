@@ -1,0 +1,12 @@
+node_modules
+dist
+coverage
+/fixtures
+vendor
+public/pdfjs
+public/fonts
+playwright-report
+test-results
+docs/verification
+package-lock.json
+PROMPT.md

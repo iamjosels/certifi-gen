@@ -1,0 +1,116 @@
+/*
+ * Design tokens. Components only use the semantic names below (bg-surface, text-muted,
+ * border-line, bg-accent…); change the look of the whole app by editing this file.
+ */
+
+@font-face {
+  font-family: 'DM Serif Display';
+  src: url('/fonts/dm-serif-display/DMSerifDisplay-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+  --c-bg: #f6f4ee;
+  --c-bg-glow: #ece7da;
+  --c-surface: #ffffff;
+  --c-surface-2: #f2efe7;
+  --c-surface-3: #e9e5da;
+  --c-line: #e1dccf;
+  --c-line-strong: #c9c2b1;
+  --c-ink: #1b1c21;
+  --c-muted: #565965;
+  --c-subtle: #6a6d78;
+  --c-accent: #3341a3;
+  --c-accent-hover: #283584;
+  --c-accent-ink: #ffffff;
+  --c-accent-soft: #e7e9f8;
+  --c-accent-soft-ink: #26317e;
+  --c-gold: #8a6112;
+  --c-gold-soft: #f6ecd6;
+  --c-success: #1c7346;
+  --c-success-soft: #e2f3ea;
+  --c-warning: #8f5300;
+  --c-warning-soft: #fcefd9;
+  --c-danger: #b42318;
+  --c-danger-soft: #fdeceb;
+  --c-canvas: #dcd7cb;
+  --c-overlay: rgb(20 22 30 / 0.45);
+  --shadow-color: 32 28 18;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --c-bg: #111217;
+  --c-bg-glow: #191b25;
+  --c-surface: #191b22;
+  --c-surface-2: #20232c;
+  --c-surface-3: #2a2e39;
+  --c-line: #2d313c;
+  --c-line-strong: #434958;
+  --c-ink: #ecebe6;
+  --c-muted: #a9acb7;
+  --c-subtle: #969aa6;
+  --c-accent: #8e9bf6;
+  --c-accent-hover: #a9b3fa;
+  --c-accent-ink: #0f1230;
+  --c-accent-soft: #252a4f;
+  --c-accent-soft-ink: #c9cffc;
+  --c-gold: #e3bb66;
+  --c-gold-soft: #3a2f17;
+  --c-success: #63d39b;
+  --c-success-soft: #173326;
+  --c-warning: #f4b85a;
+  --c-warning-soft: #3a2a12;
+  --c-danger: #ff8f80;
+  --c-danger-soft: #3d1c1a;
+  --c-canvas: #0b0c10;
+  --c-overlay: rgb(0 0 0 / 0.6);
+  --shadow-color: 0 0 0;
+}
+
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-bg-glow: var(--c-bg-glow);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-surface-3: var(--c-surface-3);
+  --color-line: var(--c-line);
+  --color-line-strong: var(--c-line-strong);
+  --color-ink: var(--c-ink);
+  --color-muted: var(--c-muted);
+  --color-subtle: var(--c-subtle);
+  --color-accent: var(--c-accent);
+  --color-accent-hover: var(--c-accent-hover);
+  --color-accent-ink: var(--c-accent-ink);
+  --color-accent-soft: var(--c-accent-soft);
+  --color-accent-soft-ink: var(--c-accent-soft-ink);
+  --color-gold: var(--c-gold);
+  --color-gold-soft: var(--c-gold-soft);
+  --color-success: var(--c-success);
+  --color-success-soft: var(--c-success-soft);
+  --color-warning: var(--c-warning);
+  --color-warning-soft: var(--c-warning-soft);
+  --color-danger: var(--c-danger);
+  --color-danger-soft: var(--c-danger-soft);
+  --color-canvas: var(--c-canvas);
+  --color-overlay: var(--c-overlay);
+
+  --font-sans:
+    'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-display: 'DM Serif Display', 'Iowan Old Style', Georgia, serif;
+  --font-mono: 'Cascadia Code', 'SFMono-Regular', Consolas, monospace;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+
+  --shadow-soft:
+    0 1px 2px rgb(var(--shadow-color) / 0.06), 0 2px 8px rgb(var(--shadow-color) / 0.05);
+  --shadow-lift:
+    0 2px 4px rgb(var(--shadow-color) / 0.06), 0 12px 32px rgb(var(--shadow-color) / 0.1);
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
