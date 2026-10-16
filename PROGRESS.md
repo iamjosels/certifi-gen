@@ -8,7 +8,7 @@ Los hashes de commit de cada fase se ven con `git log --oneline` (cada mensaje t
 | ----------------- | --------- |
 | 0 — Setup         | cerrada   |
 | 1 — Dominio       | cerrada   |
-| 2 — Participantes | pendiente |
+| 2 — Participantes | cerrada   |
 | 3 — Motor         | pendiente |
 | 4 — Interfaz      | pendiente |
 | 5 — E2E y pulido  | pendiente |
@@ -95,3 +95,33 @@ Los hashes de commit de cada fase se ven con `git log --oneline` (cada mensaje t
 **Pendientes**
 
 - Ninguno de la fase.
+
+---
+
+## Fase 2 — Lectura de participantes ✅
+
+**Qué se hizo**
+
+- Puertos `ParticipantParser` y `ParticipantParserRegistry` (`src/application/ports.ts`) y caso de uso `parseParticipants` + `applyLayout` (`src/application/parse-participants.ts`): detecta formato, carga el parser, detecta encabezado y columna de nombre, normaliza y marca duplicados. `applyLayout` permite cambiar la columna o el encabezado sin volver a leer el archivo.
+- Un parser por formato en `src/infrastructure/parsers/`, cada uno cargado bajo demanda (`import()` → chunk propio):
+  - `txt-parser`: una línea por participante.
+  - `csv-parser`: PapaParse con detección de separador (`,` `;` tab `|`).
+  - `xlsx-parser`: SheetJS, primera hoja con datos, celdas como texto formateado.
+  - `docx-parser`: mammoth, un nombre por párrafo (los saltos de línea dentro de un párrafo también separan).
+- `decode-text.ts`: BOM UTF-8/UTF-16, UTF-16 sin BOM por heurística, UTF-8 estricto (`TextDecoder` con `fatal: true`) y, si falla, Windows-1252.
+- `registry.ts`: detección por extensión (txt, csv, tsv, xlsx, xlsm, xls, docx) validada con la firma del archivo (ZIP/OLE), para rechazar archivos renombrados.
+
+**Decisiones**
+
+- Se acepta también `.xls`/`.xlsm`/`.tsv` porque SheetJS y PapaParse los leen sin costo extra.
+- Un archivo sin participantes válidos es un error (`list-empty`), no una lista vacía silenciosa.
+
+**Pruebas que pasan**
+
+- `tests/integration/participants.test.ts`: cada uno de los 5 fixtures (TXT, CSV UTF-8, CSV Windows-1252, XLSX, DOCX) produce **exactamente los mismos 360 nombres de `expected.json`**, con tildes, ñ, ü, ë, apóstrofes y guiones correctos; 17 vacías descartadas; los mismos 5 grupos de duplicados; encabezado y columna "Nombre" detectados en CSV/XLSX; codificación `windows-1252` detectada. También: elegir otra columna, tratar el encabezado como dato, lista vacía, formato no soportado, XLSX y DOCX dañados.
+- Unitarios de decodificación, separación de líneas, CSV y registro.
+- `npm run check` ✅ (201 tests).
+
+**Pendientes**
+
+- Ninguno de la fase (la carga de xlsx/mammoth en el navegador se valida en los E2E de la Fase 5).
