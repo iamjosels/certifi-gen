@@ -3,11 +3,12 @@ export type OutputMode = 'zip' | 'merged' | 'both';
 export interface SizeSample {
   /** Bytes of single-certificate PDFs generated as a sample. */
   readonly individualSizes: readonly number[];
-  /** Bytes of a merged PDF with `mergedSamplePages` pages. */
-  readonly mergedSampleSize: number;
-  readonly mergedSamplePages: number;
-  /** Bytes of a merged PDF with a single page (same participants' first). */
-  readonly mergedSinglePageSize: number;
+  /**
+   * Two merged PDFs of different page counts. The marginal size per page is taken between them,
+   * once the font subset has most of its glyphs (a 1-page baseline overestimates it).
+   */
+  readonly mergedSmall: { readonly pages: number; readonly bytes: number };
+  readonly mergedLarge: { readonly pages: number; readonly bytes: number };
 }
 
 export interface SizeEstimate {
@@ -42,12 +43,10 @@ export function estimateOutputSize(
         );
   let mergedBytes: number | null = null;
   if (mode !== 'zip') {
-    const extraPages = Math.max(1, sample.mergedSamplePages - 1);
-    const perPage = Math.max(
-      0,
-      (sample.mergedSampleSize - sample.mergedSinglePageSize) / extraPages,
-    );
-    mergedBytes = Math.round(sample.mergedSinglePageSize + perPage * Math.max(0, total - 1));
+    const { mergedSmall: small, mergedLarge: large } = sample;
+    const extraPages = large.pages - small.pages;
+    const perPage = extraPages > 0 ? Math.max(0, (large.bytes - small.bytes) / extraPages) : 0;
+    mergedBytes = Math.max(0, Math.round(large.bytes + perPage * (total - large.pages)));
   }
   return { zipBytes, mergedBytes };
 }

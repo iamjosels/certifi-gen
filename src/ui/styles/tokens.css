@@ -37,6 +37,12 @@
   --c-canvas: #dcd7cb;
   --c-overlay: rgb(20 22 30 / 0.45);
   --shadow-color: 32 28 18;
+  /* The template is a light document in both themes: the design canvas keeps these. */
+  --c-canvas-field: #3341a3;
+  --c-canvas-field-fill: #3341a3;
+  --c-canvas-overflow: #c4320a;
+  --c-canvas-handle: #ffffff;
+  --c-canvas-guide: #b8860b;
 }
 
 :root[data-theme='dark'] {

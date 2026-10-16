@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { createServices } from './composition-root';
 import { App } from './ui/App';
 import { ServicesProvider } from './ui/components/ServicesProvider';
+import { initTheme } from './ui/hooks/use-theme';
 import './ui/styles/index.css';
 
 const container = document.getElementById('root');
@@ -10,6 +11,7 @@ if (!container) {
   throw new Error('Root element #root not found');
 }
 
+initTheme();
 const services = createServices();
 
 createRoot(container).render(

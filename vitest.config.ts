@@ -21,8 +21,8 @@ export default defineConfig({
         test: {
           name: 'ui',
           environment: 'jsdom',
-          include: ['src/**/*.test.tsx'],
-          setupFiles: ['./src/ui/test-setup.ts'],
+          include: ['src/**/*.test.tsx', 'tests/ui/**/*.test.tsx'],
+          setupFiles: ['./tests/ui/setup.ts'],
           testTimeout: 30_000,
         },
       },
@@ -30,7 +30,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/**/*.test.{ts,tsx}', 'src/ui/test-setup.ts', 'src/vite-env.d.ts'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/vite-env.d.ts'],
       reporter: ['text-summary', 'text', 'html'],
       thresholds: {
         'src/domain/**': {

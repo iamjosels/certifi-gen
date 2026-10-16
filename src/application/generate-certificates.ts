@@ -1,5 +1,5 @@
 import { AppError } from '../domain/errors';
-import { codeFieldOf, resolveFieldText } from '../domain/field';
+import { codeFieldOf, invalidFields, resolveFieldText } from '../domain/field';
 import { certificateFileName } from '../domain/filename';
 import { batchRanges } from '../domain/progress';
 import { buildReportCsv, REPORT_FILE_NAME, type ReportRow } from '../domain/report';
@@ -36,6 +36,8 @@ export async function generateCertificates(
   const { participants, fields, mode } = request;
   const total = participants.length;
   if (total === 0) throw new AppError('list-empty');
+  const invalid = invalidFields(fields)[0];
+  if (invalid) throw new AppError('code-pattern-invalid', invalid.label);
 
   const session = await deps.renderer.prepare(request);
   const archive = mode === 'merged' ? null : deps.archiver.create();

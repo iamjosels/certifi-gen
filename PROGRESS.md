@@ -10,7 +10,7 @@ Los hashes de commit de cada fase se ven con `git log --oneline` (cada mensaje t
 | 1 — Dominio       | cerrada   |
 | 2 — Participantes | cerrada   |
 | 3 — Motor         | cerrada   |
-| 4 — Interfaz      | pendiente |
+| 4 — Interfaz      | cerrada   |
 | 5 — E2E y pulido  | pendiente |
 | 6 — Entrega       | pendiente |
 
@@ -227,3 +227,74 @@ Los hashes de commit de cada fase se ven con `git log --oneline` (cada mensaje t
 **Pendientes**
 
 - Ninguno de la fase.
+
+---
+
+## Fase 4 — Interfaz ✅
+
+**Qué se hizo**
+
+- **Asistente de 4 pasos** (`src/ui/App.tsx`):
+  - Encabezado fijo con marca, indicador de progreso (`Stepper`, con pasos completados y bloqueados), exportar/importar configuración y selector de tema.
+  - Pie fijo con Atrás / Continuar y la nota de privacidad.
+  - Avisos (`aria-live`), enlace "Saltar al contenido" y un `h1` para lectores de pantalla.
+  - Transición suave entre pasos.
+- **Estado** con Zustand (`ui/store/app-store.ts`). Los adaptadores llegan por `ServicesProvider`/`useServices`; ningún componente importa pdf-lib, pdfjs, JSZip ni los parsers (lo impone ESLint).
+- **Paso 1 – Plantilla:**
+  - Zona de arrastrar y soltar con ilustración y miniatura (pdf.js para PDF, la imagen misma para PNG/JPG).
+  - Tamaño en mm y pt, orientación, peso, píxeles y avisos (páginas extra, EXIF).
+  - Imagen pesada → "Optimizar" (JPG 85 %); si hay transparencia, primero avisa y pide "Optimizar igual".
+- **Paso 2 – Participantes:**
+  - Contadores de válidos, vacías, repetidos y columnas; aviso de duplicados con el filtro "Ver repetidos".
+  - Selector de la columna de nombre y casilla "La primera fila es el encabezado".
+  - Tabla con búsqueda (sin tildes ni mayúsculas), paginación de 20 filas y edición rápida en línea (Enter guarda, Escape cancela, no admite nombres vacíos).
+- **Paso 3 – Diseño:**
+  - Lienzo SVG en puntos PDF sobre la plantilla, con el texto en la fuente real (FontFace con los mismos TTF del PDF).
+  - Cajas que se arrastran y redimensionan (asas laterales); también con el teclado: flechas, Mayús para pasos grandes, Alt para el ancho.
+  - Guías de centrado con snap (±1,2 %).
+  - Panel lateral: campos (nombre, código correlativo, columna, texto fijo), fuente (incluidas + subir TTF/OTF), tamaño máximo/mínimo, color, alineación, transformación, posición y ancho en %, "Centrar en la página".
+  - Selector de participante, "Ver los más largos" (los 3 de mayor ancho medido) y "Vista previa real" (el PDF generado por el worker, mostrado con pdf.js).
+  - Desbordes marcados en rojo en el lienzo y listados antes de generar; aviso de caracteres que la fuente no tiene.
+- **Paso 4 – Generar:**
+  - Modo ZIP / PDF único / ambos y peso estimado (aviso si el ZIP supera 500 MB, con el botón "Optimizar plantilla").
+  - Avisos de desbordes y de códigos con patrón inválido (este último bloquea la generación).
+  - Progreso "123/360" con tiempo restante, fase "Empaquetando" y botón Cancelar.
+  - Resumen al terminar, una descarga por archivo y "Generar de nuevo".
+- **Configuración:**
+  - Exportar/importar JSON (`configuracion-certificados.json`) con validación y avisos (fuente faltante → DM Serif Display; proporción distinta).
+  - La última configuración se guarda en localStorage (con `try/catch`; solo la configuración) y se restaura al abrir.
+- **Diseño visual:**
+  - Tokens semánticos en `tokens.css`, con claro y oscuro por `data-theme` y la preferencia guardada.
+  - Tipografía editorial (DM Serif Display en títulos), ilustraciones en los estados vacíos y microinteracciones: hover con elevación, arrastre que resalta la zona, barra de progreso animada, confirmación final.
+  - `prefers-reduced-motion` respetado.
+  - El lienzo usa tokens propios (`--c-canvas-*`), iguales en ambos temas, porque la plantilla siempre es un documento claro.
+  - Probado a 1440, 1280, 1024 y 768 px.
+- **Accesibilidad:**
+  - Todos los controles tienen etiqueta; los grupos de opciones son `radiogroup`, los campos son pestañas y el diálogo es `<dialog>` nativo.
+  - Las cajas del lienzo son enfocables y describen cómo moverlas.
+  - Barra de progreso con `aria-valuenow`; los colores de texto cumplen contraste AA (se audita en la Fase 5).
+
+**Decisiones**
+
+- Los tests de componentes viven en `tests/ui/`, para poder usar adaptadores reales (el registro de parsers) sin romper la regla de capas de `src/ui`.
+- Números con `es-PE` (punto decimal, coma de miles).
+- Un patrón de código inválido mientras se escribe se muestra tal cual en el lienzo (no rompe la vista) y bloquea la generación; el caso de uso también lo rechaza (`code-pattern-invalid`).
+- La estimación del PDF único usa el incremento entre muestras de 10 y 20 páginas. Con 1 y 5 páginas sobreestimaba ×2, porque el recorte de la fuente crece al principio.
+- Las zonas de arrastre usan listeners nativos de `dragover`/`drop`; el control accesible sigue siendo el `<input type="file">`.
+- Pasos completados: se marcan al avanzar más allá de ellos (o al generar, en el último).
+
+**Pruebas que pasan**
+
+- 36 tests de componentes en 6 archivos (`tests/ui/`):
+  - `App`: navegación bloqueada hasta tener plantilla y lista, restauración de la configuración y tema.
+  - `TemplateStep`: carga, datos, páginas extra, 3 errores en español, optimización con aviso de transparencia.
+  - `ParticipantsStep`: contadores, paginación, búsqueda sin tildes, filtro de repetidos, edición rápida y validación, selector de columna y encabezado, formato no soportado y lista vacía.
+  - `DesignStep`: geometría con snap y redimensionado, cambio de participante, teclado, panel de propiedades, código correlativo con validación del patrón, "Ver los más largos", desborde en rojo, vista previa real y fuente propia.
+  - `GenerateStep`: estimación por modo, progreso "4/10 · quedan ~3 s", descargas, cancelar y regenerar, errores, aviso de desborde, ZIP enorme.
+  - `ConfigMenu`: exportar (sin datos personales) e importar con aviso de fuente faltante.
+- Recorrido manual con Playwright contra `vite preview`: flujo completo y 360 certificados en ambos modos en el navegador en unos 6,8 s, sin mensajes en la consola.
+- `npm run check` ✅ (339 tests).
+
+**Pendientes**
+
+- Ninguno de la fase. Los E2E formales, axe y Lighthouse corresponden a la Fase 5.

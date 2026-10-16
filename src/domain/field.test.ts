@@ -5,6 +5,7 @@ import {
   codeFieldOf,
   createField,
   createNameField,
+  invalidFields,
   rawFieldText,
   resolveFieldText,
   type FieldConfig,
@@ -101,6 +102,18 @@ describe('rawFieldText / resolveFieldText', () => {
       source: { kind: 'static' as const, text: 'Lima, 2026' },
     };
     expect(resolveFieldText(field, participant)).toBe('Lima, 2026');
+  });
+});
+
+describe('invalid code patterns', () => {
+  it('shows the raw pattern while it is invalid and lists the field as invalid', () => {
+    const field = {
+      ...createField('sequence', []),
+      source: { kind: 'sequence' as const, pattern: 'CERT', start: 1 },
+    };
+    expect(resolveFieldText(field, participant)).toBe('CERT');
+    expect(invalidFields([createNameField(), field])).toEqual([field]);
+    expect(invalidFields([createNameField(), createField('sequence', [])])).toEqual([]);
   });
 });
 

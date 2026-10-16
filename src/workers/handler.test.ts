@@ -139,7 +139,11 @@ describe('createWorkerHandler', () => {
     expect(messages[1]).toMatchObject({
       id: 5,
       type: 'result',
-      result: { individualSizes: [3, 3, 3], mergedSamplePages: 5 },
+      result: {
+        individualSizes: [3, 3, 3],
+        mergedSmall: { pages: 10, bytes: 2 },
+        mergedLarge: { pages: 20, bytes: 2 },
+      },
     });
   });
 

@@ -1,4 +1,4 @@
-import { formatCode } from './code-pattern';
+import { formatCode, isValidCodePattern } from './code-pattern';
 import type { Participant } from './participant';
 import { toTitleCase, toUpperCase } from './title-case';
 import { normalizeText } from './text';
@@ -130,7 +130,10 @@ export function rawFieldText(field: FieldConfig, participant: Participant): stri
     case 'column':
       return participant.fields[source.column] ?? '';
     case 'sequence':
-      return formatCode(source.pattern, source.start + participant.index);
+      // An invalid pattern (being typed) is shown as is; generation refuses it (invalidFields).
+      return isValidCodePattern(source.pattern)
+        ? formatCode(source.pattern, source.start + participant.index)
+        : source.pattern;
     case 'static':
       return source.text;
   }
@@ -139,6 +142,13 @@ export function rawFieldText(field: FieldConfig, participant: Participant): stri
 /** Final text drawn on the certificate. */
 export function resolveFieldText(field: FieldConfig, participant: Participant): string {
   return applyTransform(rawFieldText(field, participant), field.transform);
+}
+
+/** Fields that cannot be generated as they are (today: invalid code patterns). */
+export function invalidFields(fields: readonly FieldConfig[]): FieldConfig[] {
+  return fields.filter(
+    (field) => field.source.kind === 'sequence' && !isValidCodePattern(field.source.pattern),
+  );
 }
 
 /** The first sequence field defines the "código" column of the report. */

@@ -3,9 +3,8 @@ import { estimateOutputSize } from './size-estimate';
 
 const sample = {
   individualSizes: [100_000, 110_000],
-  mergedSampleSize: 140_000,
-  mergedSamplePages: 5,
-  mergedSinglePageSize: 100_000,
+  mergedSmall: { pages: 10, bytes: 150_000 },
+  mergedLarge: { pages: 20, bytes: 200_000 },
 };
 
 describe('estimateOutputSize', () => {
@@ -16,26 +15,30 @@ describe('estimateOutputSize', () => {
     expect(zipBytes).toBeLessThan(360 * 105_000 * 1.01);
   });
 
-  it('estimates the merged PDF as base + marginal size per page', () => {
+  it('estimates the merged PDF from the marginal size per page between two samples', () => {
     const { zipBytes, mergedBytes } = estimateOutputSize(sample, 360, 'merged');
     expect(zipBytes).toBeNull();
-    // 100 KB for the first page, (140 - 100) / 4 = 10 KB per extra page
-    expect(mergedBytes).toBe(100_000 + 10_000 * 359);
+    // (200 - 150) KB / 10 pages = 5 KB per page
+    expect(mergedBytes).toBe(200_000 + 5_000 * 340);
   });
 
-  it('estimates both', () => {
-    const both = estimateOutputSize(sample, 10, 'both');
+  it('estimates both, also for lists smaller than the sample', () => {
+    const both = estimateOutputSize(sample, 5, 'both');
     expect(both.zipBytes).not.toBeNull();
-    expect(both.mergedBytes).toBe(100_000 + 10_000 * 9);
+    expect(both.mergedBytes).toBe(200_000 - 5_000 * 15);
   });
 
-  it('handles empty samples and a single page sample', () => {
+  it('handles empty samples and equal page counts', () => {
     const empty = estimateOutputSize(
-      { individualSizes: [], mergedSampleSize: 0, mergedSamplePages: 1, mergedSinglePageSize: 0 },
+      {
+        individualSizes: [],
+        mergedSmall: { pages: 1, bytes: 10 },
+        mergedLarge: { pages: 1, bytes: 10 },
+      },
       0,
       'both',
     );
-    expect(empty.mergedBytes).toBe(0);
+    expect(empty.mergedBytes).toBe(10);
     expect(empty.zipBytes).toBeGreaterThan(0);
   });
 });

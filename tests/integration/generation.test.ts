@@ -306,6 +306,22 @@ describe('several fields, codes and overflow', () => {
     expect(output.report[0]?.name).toBe('pEdRo SÁNCHEZ díaz');
   });
 
+  it('refuses to generate with an invalid code pattern', async () => {
+    const code: FieldConfig = {
+      ...createField('sequence', [createNameField()]),
+      source: { kind: 'sequence', pattern: 'CERT', start: 1 },
+    };
+    await expect(
+      runGeneration({
+        template,
+        participants: participants.slice(0, 2),
+        mode: 'zip',
+        fonts,
+        fields: [createNameField(), code],
+      }),
+    ).rejects.toMatchObject({ code: 'code-pattern-invalid' });
+  });
+
   it('stops at the next batch when cancelled', async () => {
     let checkpoints = 0;
     await expect(

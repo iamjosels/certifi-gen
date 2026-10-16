@@ -3,7 +3,8 @@ import type { SizeSample } from '../domain/size-estimate';
 import type { CertificateRenderer, RenderRequest } from './ports';
 
 const INDIVIDUAL_SAMPLES = 3;
-const MERGED_SAMPLE_PAGES = 5;
+const MERGED_SMALL_PAGES = 10;
+const MERGED_LARGE_PAGES = 20;
 
 function spread<T>(items: readonly T[], count: number): T[] {
   if (items.length <= count) return [...items];
@@ -20,26 +21,21 @@ export async function estimateOutput(
   renderer: CertificateRenderer,
 ): Promise<SizeSample> {
   const session = await renderer.prepare(request);
-  const samples = spread(request.participants, INDIVIDUAL_SAMPLES);
   const individualSizes: number[] = [];
-  for (const participant of samples) {
+  for (const participant of spread(request.participants, INDIVIDUAL_SAMPLES)) {
     individualSizes.push((await session.renderDocument(participant)).bytes.length);
   }
 
-  const single = await session.createMergedDocument();
-  const first = request.participants[0];
-  if (first) single.addPage(first);
-  const mergedSinglePageSize = (await single.save()).length;
-
-  const pages = spread(request.participants, MERGED_SAMPLE_PAGES);
-  const multi = await session.createMergedDocument();
-  for (const participant of pages) multi.addPage(participant);
-  const mergedSampleSize = (await multi.save()).length;
+  const merged = async (count: number) => {
+    const pages = spread(request.participants, count);
+    const builder = await session.createMergedDocument();
+    for (const participant of pages) builder.addPage(participant);
+    return { pages: pages.length, bytes: (await builder.save()).length };
+  };
 
   return {
     individualSizes,
-    mergedSinglePageSize,
-    mergedSampleSize,
-    mergedSamplePages: Math.max(1, pages.length),
+    mergedSmall: await merged(MERGED_SMALL_PAGES),
+    mergedLarge: await merged(MERGED_LARGE_PAGES),
   };
 }
